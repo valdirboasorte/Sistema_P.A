@@ -1,0 +1,71 @@
+{% extends '_base.html' %}
+{% load crispy_forms_tags %}
+{% load permission_tags %}
+
+{% block content %}
+    <div class="container">
+        <h1 class="my-4">Detalhes da plano de estudo: </h1>
+        
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ planoDeEstudo.descricao }}</h5>
+                <p class="card-text">Autor: {{ planoDeEstudo.autor }}</p>
+                <div class="d-flex justify-content-around mt-3">
+                    {% if user|can:'editar_plano_estudo' %}
+                        <a href="#" class="btn btn-warning" type="button" data-bs-toggle="modal" data-bs-target="#modalPlanodeEstudo">
+                            <i class="ti ti-pencil"></i>
+                        </a>
+                    {% endif %}
+                    {% if user|can:'excluir_plano_estudo' %}
+                        <a href="{% url 'excluir-plano-estudo' planoDeEstudo.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza de que deseja excluir esta plano de estudo?')"><i class="ti ti-trash"></i></a>
+                    {% endif %}
+                </div>  
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Comentários</h5>
+                {% for c in planoDeEstudo.comentarios.all %}
+                    <p class="card-text">{{ c.texto }}</p>
+                {% empty %}
+                    <p class="card-text">Nesse plano de estudo não à comentários.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <a href="{% url 'listar-comentario' planoDeEstudo.id %}" class="btn btn-secondary mt-3">Vizualizar os comentários</a>
+
+    </div>
+
+    <div class="modal fade" id="modalPlanodeEstudo" tabindex="-1" aria-labelledby="modalPlanodeEstudoLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="modalPlanodeEstudoLabel">Editar plano de estudo</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{% url "editar-plano-estudo" planoDeEstudo.id %}" method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                        </div>
+                        {% for field in form %}
+                            <div class="mb-3">
+                                {{ field|as_crispy_field }}
+                            </div>
+                        {% endfor %}
+                        <div class="col">
+                            <button style="width: 100%;" id="buttonSubmit" class="btn submit  btn-success my-2" type="submit">
+                                Salvar
+                            </button>
+                            <button style="width: 100%;" type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                Fechar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

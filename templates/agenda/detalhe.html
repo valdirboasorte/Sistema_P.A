@@ -1,0 +1,88 @@
+{% extends '_base.html' %}
+{% load crispy_forms_tags %}
+{% load permission_tags %}
+{% load static %}
+
+{% block content %}
+    <div class="container">
+        <h1 class="my-4">Agendamentos</h1>
+        
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ agenda.descricao }}</h5>
+                <p class="card-text">Autor: {{ agenda.autor }}</p>
+                <p class="card-text">Status: {{ agenda.get_status_display }}</p>
+                <p class="card-text">Dia: {{ agenda.dia }}</p>
+                <div class="d-flex justify-content-around mt-3">
+                    {% if user|can:'editar_agenda' %}
+                        <a href="#" class="btn btn-warning" type="button" data-bs-toggle="modal" data-bs-target="#modalAgendamento">
+                            <i class="ti ti-pencil"></i>
+                        </a>
+                    {% endif %}
+                    {% if user|can:'excluir_agenda' %}
+                        <a href="{% url 'excluir-agenda' agenda.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza de que deseja excluir esse Agendamento?')"><i class="ti ti-trash"></i></a>
+                    {% endif %}
+                </div>  
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Planos de Estudo</h5>
+                {% for plano in agenda.planos_de_estudo.all %}
+                    <div class="border">
+                        <div class="mx-2 my-2">
+                            <p class="card-text">Plano: {{ plano.descricao }}</p>
+                            <p class="card-text">Turma: {{ plano.agenda.turma.nome }}</p>
+                            <p class="card-text">Autor: {{ plano.autor }}</p>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="card-text">Nenhum plano de estudo encontrado para esta agenda.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <a href="{% url 'listar-plano-estudo' agenda.id %}" class="btn btn-secondary mt-3">Vizualizar os planos de estudos</a>
+
+    </div>
+
+    <div class="modal fade" id="modalAgendamento" tabindex="-1" aria-labelledby="modalAgendamentoLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="modalAgendamentoLabel">Criar Agendamento</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{% url "editar-agenda" agenda.id %}" method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                        </div>
+                        {% for field in form %}
+                            <div class="mb-3">
+                                {{ field|as_crispy_field }}
+                            </div>
+                        {% endfor %}
+                        <div class="col">
+                            <button style="width: 100%;" id="buttonSubmit" class="btn submit  btn-success my-2" type="submit">
+                                Salvar
+                            </button>
+                            <button style="width: 100%;" type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                Fechar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block script %}
+    {% if not user|can:'editar_agenda_status' %}
+        <script>
+            $("#id_status").prop('disabled', true);
+        </script>
+    {% endif %}
+{% endblock script %}

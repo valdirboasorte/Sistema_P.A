@@ -1,0 +1,125 @@
+{% extends '_base.html' %}
+{% load crispy_forms_tags %}
+{% load permission_tags %}
+{% load static %}
+
+{% block content %}
+    <div class="">
+        <div class="d-flex justify-content-around my-5">
+            <div>
+                <h2>Agendamentos</h2>
+            </div>
+            {% if user|can:'criar_agenda' %}
+                <div>
+                    <button 
+                        type="button" 
+                        class="btn btn-primary btn-lg"
+                        data-bs-toggle="modal" data-bs-target="#modalAgendamento"
+                    >
+                    Adicionar Agendamento
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+        <div class="container">
+            <div id="calendar"></div>
+        </div>
+        
+    </div>
+
+    <div class="modal fade" id="modalAgendamento" tabindex="-1" aria-labelledby="modalAgendamentoLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="modalAgendamentoLabel">Criar Agendamento</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{% url "criar-agenda" %}" method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                        </div>
+                        {% for field in form %}
+                            <div class="mb-3">
+                                {{ field|as_crispy_field }}
+                            </div>
+                        {% endfor %}
+                        <div class="col">
+                            <button style="width: 100%;" id="buttonSubmit" class="btn submit  btn-success my-2" type="submit">
+                                Salvar
+                            </button>
+                            <button style="width: 100%;" type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                Fechar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalDetalheAgenda" tabindex="-1" aria-labelledby="modalDetalheAgendaLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalDetalheAgendaLabel">Detalhes do Agendamento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Descrição:</strong> <span id="agendaDescricao"></span></p>
+                    <p><strong>Data:</strong> <span id="agendaData"></span></p>
+                    <p><strong>Status:</strong> <span id="agendaStatus"></span></p>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" id="btnDetalheAgenda" class="btn btn-primary">Ver Detalhes</a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block script %}
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.6/index.global.min.js'></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'pt-br',
+                height: "auto",
+                themeSystem: "bootstrap5",
+                headerToolbar: {
+                    start: "prev",
+                    center: "title",
+                    end: "next",
+                },
+                selectable: true,
+                events: [
+                    {% for agenda in agendamentos %}
+                    {
+                        title: '{{ agenda.descricao }}',
+                        start: '{{ agenda.dia|date:"Y-m-d\TH:i:s" }}',
+                        id: '{{agenda.id}}',
+                        status: '{{agenda.get_status_display}}',
+                        color: '{% if agenda.status == "ES" %}grey{% elif agenda.status == "AC" %}green{% elif agenda.status == "CAN" %}red{% elif agenda.status == "REA" %}blue{% endif %}',
+                    },
+                    {% endfor %}
+                ],
+                eventClick: function(info) {
+                    var event = info.event;
+
+                    $('#modalDetalheAgenda').modal('show');
+                    $('#agendaDescricao').text(event.title);
+                    $('#agendaData').text(new Date(event.start).toLocaleString());
+                    $('#agendaStatus').text(event.extendedProps.status);
+                    $('#btnDetalheAgenda').attr('href', `/agenda/${event.id}/`);
+                }   
+            });
+
+            calendar.render();
+
+        });
+    </script>
+{% endblock script %}

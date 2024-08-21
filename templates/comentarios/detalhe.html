@@ -1,0 +1,59 @@
+{% extends '_base.html' %}
+{% load crispy_forms_tags %}
+{% load permission_tags %}
+
+{% block content %}
+    <div class="container">
+        <h1 class="my-4">Detalhes do comentário: </h1>
+        
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ comentario.texto }}</h5>
+                <p class="card-text">Autor: {{ comentario.autor }}</p>
+                <div class="d-flex justify-content-around mt-3">
+
+                    {% if user|can:'editar_comentario' %}
+                        <a href="#" class="btn btn-warning" type="button" data-bs-toggle="modal" data-bs-target="#modalcomentario">
+                            <i class="ti ti-pencil"></i>
+                        </a>
+                    {% endif %}
+                    {% if user|can:'excluir_comentario' %}
+                        <a href="{% url 'excluir-comentario' comentario.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza de que deseja excluir esta plano de estudo?')"><i class="ti ti-trash"></i></a>
+                    {% endif %}
+                </div>  
+            </div>
+        </div>
+
+    </div>
+
+    <div class="modal fade" id="modalcomentario" tabindex="-1" aria-labelledby="modalcomentarioLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="modalcomentarioLabel">Editar comentário</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{% url "editar-comentario" comentario.id %}" method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                        </div>
+                        {% for field in form %}
+                            <div class="mb-3">
+                                {{ field|as_crispy_field }}
+                            </div>
+                        {% endfor %}
+                        <div class="col">
+                            <button style="width: 100%;" id="buttonSubmit" class="btn submit  btn-success my-2" type="submit">
+                                Salvar
+                            </button>
+                            <button style="width: 100%;" type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                Fechar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

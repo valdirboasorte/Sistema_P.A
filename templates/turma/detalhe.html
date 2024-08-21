@@ -1,0 +1,71 @@
+{% extends '_base.html' %}
+{% load crispy_forms_tags %}
+{% load permission_tags %}
+
+{% block content %}
+    <div class="container">
+        <h1 class="my-4">Detalhes da Turma: {{ turma.nome }}</h1>
+        
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ turma.nome }}</h5>
+                <p class="card-text">Autor: {{ turma.autor }}</p>
+                <div class="d-flex justify-content-around mt-3">
+                    {% if user|can:'editar_turma' %}
+                        <a href="#" class="btn btn-warning" type="button" data-bs-toggle="modal" data-bs-target="#modalTurma">
+                            <i class="ti ti-pencil"></i>
+                        </a>
+                    {% endif %}
+                    {% if user|can:'excluir_turma' %}
+                        <a href="{% url 'excluir-turma' turma.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza de que deseja excluir esta turma?')"><i class="ti ti-trash"></i></a>
+                    {% endif %}
+                </div>  
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Membros</h5>
+                {% for a in turma.aluno_set.all %}
+                    <p class="card-text">{{ a.nome }}</p>
+                {% empty %}
+                    <p class="card-text">Nenhum aluno encontrado nesta turma.</p>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <a href="{% url 'listar-agenda' %}" class="btn btn-secondary mt-3">Vizualizar os agendamentos</a>
+
+        <a href="{% url 'listar-turma' %}" class="btn btn-secondary mt-3">Voltar para a lista de turmas</a>
+    </div>
+
+    <div class="modal fade" id="modalTurma" tabindex="-1" aria-labelledby="modalTurmaLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="modalTurmaLabel">Editar Turma</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{% url "editar-turma" turma.id %}" method="POST" id="formTurma">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                        </div>
+                        {% for field in formTurma %}
+                            <div class="mb-3">
+                                {{ field|as_crispy_field }}
+                            </div>
+                        {% endfor %}
+                        <div class="col">
+                            <button style="width: 100%;" id="buttonSubmit" class="btn submit  btn-success my-2" type="submit">
+                                Salvar
+                            </button>
+                            <button style="width: 100%;" type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                Fechar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

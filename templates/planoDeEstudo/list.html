@@ -1,0 +1,73 @@
+{% extends '_base.html' %}
+{% load crispy_forms_tags %}
+{% load permission_tags %}
+
+{% block content %}
+    <div class="">
+        <div class="d-flex justify-content-around my-5">
+            <div>
+                <h1>Planos de estudos </h1>
+            </div>
+            {% if user|can:'criar_plano_estudo' %}
+                <div>
+                    <button 
+                        type="button" 
+                        class="btn btn-primary btn-lg"
+                        data-bs-toggle="modal" data-bs-target="#modalPlanodeEstudo"
+                    >
+                    Adicionar Plano de estudo
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="row">
+            {% for p in planoDeEstudo %}
+                <div class="col-sm-4 mb-3 mb-sm-0 my-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title text-center">{{p.descricao}}</h5>
+                            <p class="card-text text-center">Orientador: {{ p.autor }}</p>
+                            <div class="d-flex justify-content-around mt-3">
+                                <a href="{% url 'visualizar-plano-estudo' p.id %}" class="btn btn-warning">
+                                    Ver mais
+                                </a>
+                            </div>                
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalPlanodeEstudo" tabindex="-1" aria-labelledby="modalPlanodeEstudoLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="modalPlanodeEstudoLabel">Criar Plano de Estudo</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{% url "criar-plano-estudo" agenda_id %}" method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                        </div>
+                        {% for field in form %}
+                            <div class="mb-3">
+                                {{ field|as_crispy_field }}
+                            </div>
+                        {% endfor %}
+                        <div class="col">
+                            <button style="width: 100%;" id="buttonSubmit" class="btn submit  btn-success my-2" type="submit">
+                                Salvar
+                            </button>
+                            <button style="width: 100%;" type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                Fechar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

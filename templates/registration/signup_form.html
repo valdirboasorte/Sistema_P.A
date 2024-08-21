@@ -1,0 +1,21 @@
+{% extends '_base.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <h2>Cadastro de {{tipo}}</h2>
+    <hr>
+
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="mb-3">
+                {{ field|as_crispy_field }}
+            </div>
+        {% endfor %}
+        <input type="submit" class="btn btn-primary btn-user btn-block" value="Cadastrar">
+    </form>
+    <div class="text-center">
+        <a class="small" href="/accounts/login/">Já possuí uma conta? Faça o Login!!</a>
+    </div>
+{% endblock content %}
